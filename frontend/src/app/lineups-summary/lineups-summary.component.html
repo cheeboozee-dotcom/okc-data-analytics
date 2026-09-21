@@ -1,0 +1,173 @@
+```html
+<div class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">OKC Basketball Analytics</p>
+      <h1>Lineup Summary</h1>
+      <p class="subtitle">
+        Evaluate lineup performance using possession-level offensive and defensive metrics.
+      </p>
+    </div>
+
+    <div class="lineup-selector">
+      <span>Lineup size</span>
+      <div class="size-buttons">
+        <button
+          *ngFor="let size of [3, 4, 5]"
+          type="button"
+          [class.active]="lineupSize === size"
+          (click)="changeLineupSize(size)"
+        >
+          {{ size }}-man
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="controls">
+    <div class="search-box">
+      <label for="lineup-search">Search players</label>
+      <input
+        id="lineup-search"
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        placeholder="Search by player name..."
+      />
+    </div>
+
+    <div class="sort-controls">
+      <span>Sort by</span>
+
+      <button
+        type="button"
+        [class.active]="sortField === 'net_ppp'"
+        (click)="changeSort('net_ppp')"
+      >
+        Net PPP
+      </button>
+
+      <button
+        type="button"
+        [class.active]="sortField === 'off_ppp'"
+        (click)="changeSort('off_ppp')"
+      >
+        Off. PPP
+      </button>
+
+      <button
+        type="button"
+        [class.active]="sortField === 'def_ppp'"
+        (click)="changeSort('def_ppp')"
+      >
+        Def. PPP
+      </button>
+
+      <button
+        type="button"
+        [class.active]="sortField === 'possessions'"
+        (click)="changeSort('possessions')"
+      >
+        Possessions
+      </button>
+    </div>
+  </section>
+
+  <section class="summary-bar" *ngIf="!loading && !error">
+    <div>
+      <strong>{{ filteredLineups.length }}</strong>
+      <span>lineups shown</span>
+    </div>
+
+    <div>
+      <strong>{{ lineups.length }}</strong>
+      <span>total lineups</span>
+    </div>
+  </section>
+
+  <div class="state loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading lineup data...</p>
+  </div>
+
+  <div class="state error-state" *ngIf="!loading && error">
+    <h2>Unable to load data</h2>
+    <p>{{ error }}</p>
+    <button type="button" (click)="loadLineups()">Retry</button>
+  </div>
+
+  <section class="lineup-list" *ngIf="!loading && !error">
+    <article
+      class="lineup-card"
+      *ngFor="let lineup of filteredLineups; trackBy: trackByLineup"
+    >
+      <div class="lineup-top">
+        <div class="rank">
+          #{{ getRank(lineup) }}
+        </div>
+
+        <div class="players">
+          <span class="player" *ngFor="let player of lineup.players">
+            {{ player.name }}
+          </span>
+        </div>
+
+        <div
+          class="net-rating"
+          [class.negative]="lineup.net_points_per_possession < 0"
+        >
+          <strong>{{ lineup.net_points_per_possession >= 0 ? '+' : '' }}{{ formatNumber(lineup.net_points_per_possession) }}</strong>
+          <span>Net PPP</span>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <span>Offensive PPP</span>
+          <strong>{{ formatNumber(lineup.offensive_points_per_possession) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Defensive PPP</span>
+          <strong>{{ formatNumber(lineup.defensive_points_per_possession) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Offensive eFG%</span>
+          <strong>{{ formatPercent(lineup.offensive_efg_pct) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Defensive eFG%</span>
+          <strong>{{ formatPercent(lineup.defensive_efg_pct) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Off. Turnover Rate</span>
+          <strong>{{ formatPercent(lineup.offensive_turnover_rate) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Def. Turnover Rate</span>
+          <strong>{{ formatPercent(lineup.defensive_turnover_rate) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Off. Rebound Rate</span>
+          <strong>{{ formatPercent(lineup.offensive_rebound_rate) }}</strong>
+        </div>
+
+        <div class="metric">
+          <span>Total Possessions</span>
+          <strong>{{ lineup.total_possessions }}</strong>
+        </div>
+      </div>
+    </article>
+
+    <div class="empty-state" *ngIf="filteredLineups.length === 0">
+      <h2>No lineups found</h2>
+      <p>Try clearing the player search or selecting a different lineup size.</p>
+    </div>
+  </section>
+</div>
+```
